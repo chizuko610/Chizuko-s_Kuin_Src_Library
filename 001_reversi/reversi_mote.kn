@@ -141,9 +141,6 @@ func main()
 										end for
 									end for
 									do ttt :: (m >= 0) ?(ttt + 1.0, ttt)
-									if(m >= 0)
-										do ttt :+ 1.0
-									end if
 									do ppp :+ 1.0
 									do @ban :: ##banwk3
 								end for
