@@ -1,0 +1,261 @@
+var mode: bool :: false
+var fontProportional: draw@Font
+var tex: draw@Tex
+var ban: [][]int
+var myturn: int
+class OKERU()
+	+var x: int
+	+var y: int
+	+var my: float
+	+*func cmp(t: OKERU): int
+		ret(me.my >= t.my) ?(1, -1)
+	end func
+end class
+func main()
+	var drawMain: wnd@Draw :: wnd@makeDraw(wnd@makeWnd(null, %fix, 512, 512 + 32, "リバーシ"), 0, 0, 512, 512 + 32, %scale, %scale, false)
+	do @fontProportional :: draw@makeFont(null, 16, false, false, true, 0.0)
+	do @tex :: draw@makeTex("res/ishi.png")
+	do draw@autoClear(false)
+	do @ban :: #[10, 10]int
+	for n(0, 9)
+		do @ban[n][0] :: -999
+		do @ban[n][9] :: -999
+		do @ban[0][n] :: -999
+		do @ban[9][n] :: -999
+	end for
+	do @ban[4][4] :: 2
+	do @ban[5][4] :: 1
+	do @ban[4][5] :: 1
+	do @ban[5][5] :: 2
+	do @DISP("左クリック/先攻　右クリック/後攻")
+	do draw@render(60)
+	do drawMain.onMouseDownL :: @click
+	while l(wnd@act())
+		if(wnd@key(%mouseL) = true & drawMain.focused() = true)
+			do @myturn :: 1
+			break l
+		elif(wnd@key(%mouseR) = true)
+			do @myturn :: 2
+			break l
+		end if
+		do draw@render(60)
+	end while
+	var nowturn: int :: 1
+	while mmm(wnd@act())
+		do @DISP("")
+		
+		if(nowturn = @myturn)
+			block mainLoop
+				var banwk2: [][]int :: ##@ban
+				var en: bool :: false
+				for nx(1, 8)
+					for ny(1, 8)
+						if(@TURN(nx, ny, @myturn) > 0)
+							do en :: true
+							do @ban :: ##banwk2
+							break nx
+						end if
+					end for
+				end for
+				if(en = false)
+					do @DISP("あなたはパスです。")
+					do lib@sleep(500)
+					break mainLoop
+				end if
+				do @DISP("あなたのターンです。入力してください。")
+				do @mode :: true
+				while(@mode = true)
+					if(wnd@act() = false)
+						ret
+					end if
+					do draw@render(60)
+				end while
+				do @mode :: false
+			end block
+		else
+			block MainLoop
+				do @DISP("CPUのターン。(お待ちください）")
+				var lst: list<@OKERU> :: #list<@OKERU>
+				var banwk3: [][]int
+				var banwk2: [][]int :: ##@ban
+				for kx(1, 8)
+					for ky(1, 8)
+						if(@ban[kx][ky] = 0)
+							if(@TURN(kx, ky, 3 - @myturn) > 0)
+								do banwk3 :: ##@ban
+								var ttt: float :: 0.0
+								var ppp: float :: 0.0
+								if(wnd@act() = false)
+									ret
+								end if
+								for n(0, 666)
+									var lst2: list<@OKERU> :: #list<@OKERU>
+									for nx(1, 8)
+										for ny(1, 8)
+											if(@ban[nx][ny] = 0)
+												var vv: @OKERU :: #@OKERU
+												do vv.x :: nx
+												do vv.y :: ny
+												if((nx = 1 & ny = 1) | (nx = 8 & ny = 1) | (nx = 1 & ny = 8) | (nx = 8 & ny = 8))
+													do vv.my :: 999.0 + lib@rndFloat(-0.2, 0.2)
+												elif((nx = 2 & ny = 2) | (nx = 7 & ny = 2) | (nx = 2 & ny = 7) | (nx = 7 & ny = 7))
+													do vv.my :: -999.0 + lib@rndFloat(-0.2, 0.2)
+												else
+													do vv.my :: lib@rndFloat(-0.2, 0.2)
+												end if
+												do lst2.add(vv)
+											end if
+										end for
+									end for
+									do lst2.sortDesc()
+									var pass: int :: 0
+									var tun: int :: @myturn
+									while nn(true)
+										var flg: bool :: false
+										do lst2.head()
+										while U(lst2.term() = false)
+											if(@TURN(lst2.get().x, lst2.get().y, tun) > 0)
+												do flg :: true
+												do pass :: 0
+												do lst2.del()
+												break U
+											end if
+											do lst2.next()
+										end while
+										do tun :: 3 - tun
+										if(flg = false)
+											do pass :+ 1
+										end if
+										if(pass > 1)
+											break nn
+										end if
+									end while
+									var m: int :: 0
+									for xx(1, 8)
+										for yy(1, 8)
+											if(@ban[xx][yy] = 3 - @myturn)
+												do m :+ 1
+											elif(@ban[xx][yy] = @myturn)
+												do m :- 1
+											end if
+										end for
+									end for
+									do ttt :: (m >= 0) ?(ttt + 1.0, ttt)
+									if(m >= 0)
+										do ttt :+ 1.0
+									end if
+									do ppp :+ 1.0
+									do @ban :: ##banwk3
+								end for
+								var ooo: @OKERU :: #@OKERU
+								do ooo.x :: kx
+								do ooo.y :: ky
+								do ooo.my :: (ppp > 0.0) ?(ttt / ppp, 0.0)
+								do lst.add(ooo)
+							end if
+							do @ban :: ##banwk2
+						end if
+					end for
+				end for
+				if(^lst = 0)
+					do @DISP("相手はパスです。")
+					do lib@sleep(500)
+				else
+					do lst.sortDesc()
+					do lst.head()
+					do @TURN(lst.get().x, lst.get().y, 3 - @myturn)
+				end if
+			end block
+		end if
+		var banwk2: [][]int :: ##@ban
+		var en: bool :: false
+		for nx(1, 8)
+			for ny(1, 8)
+				if(@TURN(nx, ny, @myturn) > 0)
+					do en :: true
+					do @ban :: ##banwk2
+					break nx
+				end if
+				if(@TURN(nx, ny, 3 - @myturn) > 0)
+					do en :: true
+					do @ban :: ##banwk2
+					break nx
+				end if
+			end for
+		end for
+		if(en = false)
+			break mmm
+		end if
+		do nowturn :: 3 - nowturn
+	end while
+	var cnb: int :: 0
+	var cnw: int :: 0
+	for xx(1, 8)
+		for yy(1, 8)
+			do cnb :+ (@ban[xx][yy] = 1) ?(1, 0)
+			do cnw :+ (@ban[xx][yy] = 2) ?(1, 0)
+		end for
+	end for
+	if(cnb > cnw)
+		do @DISP("終局。（黒の勝ち）")
+	elif(cnb < cnw)
+		do @DISP("終局。（白の勝ち）")
+	else
+		do @DISP("終局。（引き分け）")
+	end if
+	while(wnd@act())
+		do draw@render(60)
+	end while
+end func
+func DISP(str: []char)
+	do draw@clear()
+	for y(1, 8)
+		for x(1, 8)
+			do @tex.draw(64.0 * (x - 1) $ float, 64.0 * (y - 1) $ float, (64 * (@ban[x][y])) $ float, 0.0, 64.0, 64.0, draw@white)
+		end for
+	end for
+	do @fontProportional.draw(16.0, (64 * 8) $ float, str, draw@white)
+	do draw@render(60)
+end func
+func TURN(x: int, y: int, color: int): int
+	if(@ban[x][y] <> 0)
+		ret 0
+	end if
+	var h: int :: 0
+	var dd: [][]int :: [[0, -1, -1, -1, 0, 1, 1, 1], [1, 1, 0, -1, -1, -1, 0, 1]]
+	for d(0, 8 - 1)
+		var qx: int :: x + dd[0][d]
+		var qy: int :: y + dd[1][d]
+		var cnt: int :: 0
+		while(@ban[qx][qy] = 3 - color)
+			do qx :+ dd[0][d]
+			do qy :+ dd[1][d]
+			do cnt :+ 1
+		end while
+		if(@ban[qx][qy] = color & cnt > 0)
+			do qx :- dd[0][d]
+			do qy :- dd[1][d]
+			for ok(0, cnt - 1)
+				do @ban[qx][qy] :: color
+				do qx :- dd[0][d]
+				do qy :- dd[1][d]
+				do h :+ 1
+			end for
+		end if
+	end for
+	if(h > 0)
+		do @ban[x][y] :: color
+	end if
+	ret h
+end func
+func click(wnd: wnd@Draw, x: int, y: int)
+	if(@mode = true)
+		if(@TURN(x / 64 + 1, y / 64 + 1, @myturn) = 0)
+			do @DISP("そこには置けません。")
+			do lib@sleep(500)
+			do @DISP("あなたのターンです。入力してください。")
+			ret
+		end if
+		do @mode :: false
+	end if
+end func
