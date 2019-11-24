@@ -59,7 +59,7 @@ func main()
 				end for
 				if(en = false)
 					do @DISP("あなたはパスです。")
-					do lib@sleep(500)
+					do lib@sleep(1000)
 					break mainLoop
 				end if
 				do @DISP("あなたのターンです。入力してください。")
@@ -88,7 +88,7 @@ func main()
 								if(wnd@act() = false)
 									ret
 								end if
-								for n(0, 666)
+								for n(0, 3000)
 									var lst2: list<@OKERU> :: #list<@OKERU>
 									for nx(1, 8)
 										for ny(1, 8)
@@ -159,7 +159,7 @@ func main()
 				end for
 				if(^lst = 0)
 					do @DISP("相手はパスです。")
-					do lib@sleep(500)
+					do lib@sleep(1000)
 				else
 					do lst.sortDesc()
 					do lst.head()
@@ -252,7 +252,7 @@ func click(wnd: wnd@Draw, x: int, y: int)
 	if(@mode = true)
 		if(@TURN(x / 64 + 1, y / 64 + 1, @myturn) = 0)
 			do @DISP("そこには置けません。")
-			do lib@sleep(500)
+			do lib@sleep(1000)
 			do @DISP("あなたのターンです。入力してください。")
 			ret
 		end if
