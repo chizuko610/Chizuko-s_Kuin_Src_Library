@@ -1,0 +1,232 @@
+class oto()
+	+var code: []int
+	+var kai: int
+	+var naga: int
+	+var bitl: int
+end class
+
+class node()
+	+var code: int
+	+var toNode: []node
+end class
+
+func main()
+	var cm: []int :: [48, 51, 55, 60, 63, 67, 72, 75, 79]
+	
+	var c: []int :: [48, 52, 55, 60, 64, 67, 72, 76, 79]
+	var dm: []int :: [50, 53, 57, 62, 65, 69, 74, 77, 81]
+	var em: []int :: [52, 55, 59, 64, 67, 71, 76, 79, 83]
+	var f: []int :: [53, 57, 60, 65, 69, 72, 77, 81, 84]
+	var g: []int :: [55, 59, 62, 67, 71, 74, 79, 83, 86]
+	var am: []int :: [57, 60, 64, 69, 72, 76, 81, 84, 88]
+	var bm: []int :: [59, 62, 65, 71, 74, 77, 83, 86, 89]
+	
+	var cd: [][]int :: [c, dm, em, f, g, am, bm]
+	
+	;木を作る
+	var MA: []@node :: #[1]@node
+	do MA[0] :: #@node
+	
+	var MB: []@node :: #[5]@node
+	for n(0, 4)
+		do MB[n] :: #@node
+	end for
+	
+	var MC: []@node :: #[3]@node
+	for n(0, 2)
+		do MC[n] :: #@node
+	end for
+	
+	var MD: []@node :: #[4]@node
+	for n(0, 3)
+		do MD[n] :: #@node
+	end for
+	
+	var ME: []@node :: #[3]@node
+	for n(0, 2)
+		do ME[n] :: #@node
+	end for
+	
+	var MF: []@node :: #[3]@node
+	for n(0, 2)
+		do MF[n] :: #@node
+	end for
+	
+	var oc: @node :: #@node
+	do oc.code :: 0
+	do oc.toNode :: MB
+	
+	var odm: @node :: #@node
+	do odm.code :: 1
+	do odm.toNode :: MD
+	
+	var oem: @node :: #@node
+	do oem.code :: 2
+	do oem.toNode :: MC
+	
+	var of: @node :: #@node
+	do of.code :: 3
+	do of.toNode :: MD
+	
+	var og: @node :: #@node
+	do og.code :: 4
+	do og.toNode :: MF
+	
+	var oam: @node :: #@node
+	do oam.code :: 5
+	do oam.toNode :: ME
+	
+	do MA[0] :: oc
+	do MB[0] :: oem
+	do MB[1] :: oam
+	do MB[2] :: odm
+	do MB[3] :: of
+	do MB[4] :: og
+	do MC[0] :: oam
+	do MC[1] :: odm
+	do MC[2] :: of
+	do MD[0] :: oem
+	do MD[1] :: oam
+	do MD[2] :: of
+	do MD[3] :: og
+	do ME[0] :: oem
+	do ME[1] :: odm
+	do ME[2] :: of
+	do MF[0] :: oc
+	do MF[1] :: oam
+	do MF[2] :: oem
+	
+	var oLst: list<@oto> :: #list<@oto>
+	
+	var wndMain: wnd@Wnd
+	var drawMain: wnd@Draw
+	
+	do wndMain :: wnd@makeWnd(null, %fix, 600, 400, "くいちゃんおるごーる")
+	do drawMain :: wnd@makeDraw(wndMain, 0, 0, 600, 400, %scale, %scale, false)
+	
+	do draw@autoClear(false)
+	var tek: draw@Tex :: draw@makeTex("res/OP.png")
+	do tek.draw(0.0, 0.0, 0.0, 0.0, 600.0, 400.0, 0xFFFFFFFF)
+	do draw@render(60)
+	
+	;メロディを作る
+	var melo: [][][]int :: #[16, 2, 6]int
+	for n(0, 2 - 1)
+		for m(0, 16 - 1)
+			for l(0, 6 - 1)
+				do melo[m][n][l] :: lib@rnd(0, 8)
+			end for
+		end for
+	end for
+	
+	var nod: []@node :: MA
+	for n(0, 100)
+		var mel: int :: lib@rnd(0, 1)
+		do nod.shuffle()
+		for m(0, 16 - 1)
+			var o: @oto :: #@oto
+			do o.code :: cd[nod[0].code]
+			
+			do o.kai :: melo[m][mel][nod[0].code]
+			do o.naga :: 0x30 * lib@rnd(1, 2)
+			do o.bitl :: 8
+			do oLst.add(o)
+		end for
+		do nod :: nod[0].toNode
+		if(wnd@act() = false)
+			do draw@render(60)
+			ret
+		end if
+	end for
+	
+	;演奏部分
+	var ln: int :: 0
+	do oLst.head()
+	while(oLst.term() = false)
+		do ln :+ oLst.get().bitl
+		do oLst.next()
+		if(wnd@act() = false)
+			do draw@render(60)
+			ret
+		end if
+	end while
+	
+	do ln :+ 7
+	var lnc: []char :: ln.toStrFmt("08X")
+	
+	var l1: bit8 :: ("0x" ~ lnc[0].toStr() ~ lnc[1].toStr()).toInt(&) $ bit8
+	var l2: bit8 :: ("0x" ~ lnc[2].toStr() ~ lnc[3].toStr()).toInt(&) $ bit8
+	var l3: bit8 :: ("0x" ~ lnc[4].toStr() ~ lnc[5].toStr()).toInt(&) $ bit8
+	var l4: bit8 :: ("0x" ~ lnc[6].toStr() ~ lnc[7].toStr()).toInt(&) $ bit8
+	
+	var handle: file@Writer :: file@makeWriter("binary_file.mid", false)
+	
+	;ヘッダチャンク
+	do handle.write([0x4Db8, 0x54b8, 0x68b8, 0x64b8]) {チャンクタイプ}
+	do handle.write([0x00b8, 0x00b8, 0x00b8, 0x06b8]) {データ長}
+	do handle.write([0x00b8, 0x00b8]) {ファイルフォーマット}
+	do handle.write([0x00b8, 0x01b8]) {トラック数}
+	do handle.write([0x00b8, 0x48b8]) {テンポ}
+	
+	;トラックチャンク
+	do handle.write([0x4Db8, 0x54b8, 0x72b8, 0x6Bb8]) {チャンクタイプ}
+	do handle.write([l1, l2, l3, l4]) {データ長}
+	
+	;楽器
+	do handle.write([0x00b8]) {デルタタイム}
+	do handle.write([0xC0b8, 0x0Bb8]) {楽器}
+	
+	do oLst.head()
+	while(oLst.term() = false)
+		var ow: @oto :: oLst.get()
+		do handle.write([0x00b8, 0x90b8, ow.code[ow.kai] $ bit8, 0x40b8]) {音を鳴らす}
+		do handle.write([ow.naga $ bit8]) {長さ}
+		do handle.write([0x80b8, ow.code[ow.kai] $ bit8, 0x00b8]) {止める}
+		do oLst.next()
+	end while
+	
+	do handle.write([0x00b8]) {デルタタイム}
+	do handle.write([0xFFb8, 0x2Fb8, 0x00b8]) {終わり}
+	do handle.fin()
+	
+	
+	var tek1: draw@Tex :: draw@makeTex("res/001.png")
+	var tek2: draw@Tex :: draw@makeTex("res/T01.png")
+	var tek3: draw@Tex :: draw@makeTex("res/T02.png")
+	var tek4: draw@Tex :: draw@makeTex("res/T03.png")
+	var ON01: draw@Tex :: draw@makeTex("res/ON01.png")
+	
+	var ON02: draw@Tex :: draw@makeTex("res/ON02.png")
+	var on: int :: 0
+	var kui: int :: 0
+	var tm: int :: 0
+	do task@open("binary_file.mid")
+	while(wnd@act())
+		do tek1.draw(0.0, 0.0, 0.0, 0.0, 600.0, 400.0, 0xFFFFFFFF)
+		if(on = 0)
+			do ON01.draw(0.0, 0.0, 0.0, 0.0, 600.0, 400.0, 0xFFFFFFFF)
+		else
+			do ON02.draw(0.0, 0.0, 0.0, 0.0, 600.0, 400.0, 0xFFFFFFFF)
+		end if
+		if(kui = 0)
+			do tek2.draw(0.0, 0.0, 0.0, 0.0, 600.0, 400.0, 0xFFFFFFFF)
+		elif(kui = 1)
+			do tek3.draw(0.0, 0.0, 0.0, 0.0, 600.0, 400.0, 0xFFFFFFFF)
+		elif(kui = 2)
+			do tek4.draw(0.0, 0.0, 0.0, 0.0, 600.0, 400.0, 0xFFFFFFFF)
+		else
+			do tek3.draw(0.0, 0.0, 0.0, 0.0, 600.0, 400.0, 0xFFFFFFFF)
+		end if
+		do tm :: tm + 1
+		if(tm > 15)
+			do on :: 1 - on
+			do kui :: kui + 1
+			if(kui = 4)
+				do kui :: 0
+			end if
+			do tm :: 0
+		end if
+		
+		do draw@render(60)
+	end while
+end func
