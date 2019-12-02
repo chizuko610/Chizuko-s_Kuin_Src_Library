@@ -8,7 +8,7 @@ class OKERU()
 	+var y: int
 	+var my: float
 	+*func cmp(t: OKERU): int
-		ret(me.my >= t.my) ?(1, -1)
+		ret(me.my > t.my) ?(1, -1)
 	end func
 end class
 func main()
@@ -41,6 +41,7 @@ func main()
 		do draw@render(60)
 	end while
 	var nowturn: int :: 1
+	var tuu: int :: 1
 	while mmm(wnd@act())
 		do @DISP("")
 		
@@ -88,8 +89,10 @@ func main()
 								if(wnd@act() = false)
 									ret
 								end if
-								for n(0, 3000)
-									var lst2: list<@OKERU> :: #list<@OKERU>
+								
+								for n(0, 600000 / (60 - tuu))
+									var lst2: list<@OKERU>
+									do lst2 :: #list<@OKERU>
 									for nx(1, 8)
 										for ny(1, 8)
 											if(@ban[nx][ny] = 0)
@@ -140,7 +143,7 @@ func main()
 											end if
 										end for
 									end for
-									do ttt :: (m >= 0) ?(ttt + 1.0, ttt)
+									do ttt :+ (m > 0) ?(1.0, 0.0)
 									do ppp :+ 1.0
 									do @ban :: ##banwk3
 								end for
@@ -184,6 +187,7 @@ func main()
 			break mmm
 		end if
 		do nowturn :: 3 - nowturn
+		do tuu :+ 1
 	end while
 	var cnb: int :: 0
 	var cnw: int :: 0

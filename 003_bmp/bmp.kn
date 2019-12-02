@@ -1,0 +1,81 @@
+var wndMain: wnd@Wnd
+var drawMain: wnd@DrawEditable
+var wx: int
+var wy: int
+var tex: draw@Tex
+var tx: int
+var ty: int
+var workBmp: []bit32
+func main()
+	var fn: []char :: wnd@openFileDialog(null, null, 0)
+	if(fn =& null)
+		ret
+	end if
+	do @tex :: draw@makeTex(fn)
+	do @tx :: @tex.imgWidth()
+	do @ty :: @tex.imgHeight()
+	do @wx :: 640
+	do @wy :: (@wx $ float * (@ty $ float / @tx $ float)) $ int
+	
+	do @wndMain :: wnd@makeWnd(null, %fix, @wx, @wy, "bmp")
+	do @drawMain :: wnd@makeDrawEditable(@wndMain, 0, 0, @wx, @wy)
+	do draw@sampler(%linear)
+	do draw@autoClear(false)
+	
+	do @tex.drawScale(0.0, 0.0, @wx $ float, @wy $ float, 0.0, 0.0, @tx $ float, @ty $ float, draw@white)
+	do draw@editPixels(@getPixels)
+	
+	var handle: file@Writer :: file@makeWriter("test.bmp", false)
+	
+	;ファイルシグネチャ
+	do handle.write([0x42b8, 0x4Db8])
+	do @wtite4byte(14 + 40 + @wx * @wy * 3, handle)
+	do @wtite2byte(0, handle)
+	do @wtite2byte(0, handle)
+	do @wtite4byte(54, handle)
+	do @wtite4byte(40, handle)
+	do @wtite4byte(@wx, handle)
+	do @wtite4byte(@wy, handle)
+	do @wtite2byte(1, handle)
+	do @wtite2byte(24, handle)
+	do @wtite4byte(0, handle)
+	do @wtite4byte(@wx * @wy * 3, handle)
+	do @wtite4byte(0, handle)
+	do @wtite4byte(0, handle)
+	do @wtite4byte(0, handle)
+	do @wtite4byte(0, handle)
+	
+	for y(@wy - 1, 0, -1)
+		for x(0, @wx - 1)
+			var b: bit8 :: (@workBmp[y * @wx + x].and(0xFFb32)) $ bit8
+			var g: bit8 :: (@workBmp[y * @wx + x].shr(8).and(0xFFb32)) $ bit8
+			var r: bit8 :: (@workBmp[y * @wx + x].shr(16).and(0xFFb32)) $ bit8
+			var c: bit32 :: draw@argbToColor(1.0, r $ float / 255.0, g $ float / 255.0, b $ float / 255.0) $ bit32
+			var bb: bit8 :: (c.and(0xFFb32)) $ bit8
+			var gg: bit8 :: (c.shr(8).and(0xFFb32)) $ bit8
+			var rr: bit8 :: (c.shr(16).and(0xFFb32)) $ bit8
+			do handle.write([rr, gg, bb])
+		end for
+	end for
+	do handle.fin()
+	do draw@capture("ttt.bmp")
+	while(wnd@act())
+		do draw@render(60)
+	end while
+end func
+func getPixels(width: int, height: int, pixels: []bit32)
+	do @workBmp :: ##pixels
+end func
+
+func wtite2byte(b: int, fr: file@Writer)
+	var b1: bit8 :: ((b $ bit64).shr(8).and(0xFFb64)) $ bit8
+	var b2: bit8 :: ((b $ bit64).and(0xFFb64)) $ bit8
+	do fr.write([b2, b1])
+end func
+func wtite4byte(b: int, fr: file@Writer)
+	var b1: bit8 :: ((b $ bit64).shr(24).and(0xFFb64)) $ bit8
+	var b2: bit8 :: ((b $ bit64).shr(16).and(0xFFb64)) $ bit8
+	var b3: bit8 :: ((b $ bit64).shr(8).and(0xFFb64)) $ bit8
+	var b4: bit8 :: ((b $ bit64).and(0xFFb64)) $ bit8
+	do fr.write([b4, b3, b2, b1])
+end func
