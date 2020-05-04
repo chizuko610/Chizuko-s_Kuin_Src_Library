@@ -41,7 +41,6 @@ func main()
 		do draw@render(60)
 	end while
 	var nowturn: int :: 1
-	var tuu: int :: 1
 	while mmm(wnd@act())
 		do @DISP("")
 		
@@ -90,7 +89,7 @@ func main()
 									ret
 								end if
 								
-								for n(0, 600000 / (60 - tuu))
+								for n(0, 200)
 									var lst2: list<@OKERU>
 									do lst2 :: #list<@OKERU>
 									for nx(1, 8)
@@ -187,7 +186,6 @@ func main()
 			break mmm
 		end if
 		do nowturn :: 3 - nowturn
-		do tuu :+ 1
 	end while
 	var cnb: int :: 0
 	var cnw: int :: 0
